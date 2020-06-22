@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebBlog.Data;
+using WebBlog.Data.FileManager;
 using WebBlog.Data.Repository;
 
 namespace WebBlog
@@ -33,6 +34,7 @@ namespace WebBlog
                 .AddEntityFrameworkStores<AppDbContext>();
 
             services.AddTransient<IRepository, Repository>();
+            services.AddTransient<IFileManager, FileManager>();
 
             services.AddMvc();
         }
@@ -46,6 +48,8 @@ namespace WebBlog
             }
 
             app.UseAuthentication();
+
+            app.UseStaticFiles();
 
             app.UseMvcWithDefaultRoute();
             //app.Run(async (context) =>

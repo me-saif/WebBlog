@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using WebBlog.Data.FileManager;
 using WebBlog.Data.Repository;
 using WebBlog.Models;
+using WebBlog.ViewModels;
 
 namespace WebBlog.Controllers
 {
@@ -10,10 +12,12 @@ namespace WebBlog.Controllers
     public class PanelController: Controller
     {
         private IRepository _repo;
+        private IFileManager _fileManager;
 
-        public PanelController(IRepository repo)
+        public PanelController(IRepository repo, IFileManager fileManager)
         {
             _repo = repo;
+            _fileManager = fileManager;
         }
         public IActionResult Index()
         {
@@ -23,18 +27,31 @@ namespace WebBlog.Controllers
 
         public IActionResult Edit(int? id)
         {
-            if (id == null)
-                return View(new Post());
+            if (id == null) { 
+                return View(new PostViewModel());
+            }
             else
             {
                 var post = _repo.GetPost((int)id);
-                return View(post);
+                return View(new PostViewModel{
+                    Id = post.Id,
+                    Title = post.Title,
+                    Body = post.Body
+                });
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(Post post)
+        public async Task<IActionResult> Edit(PostViewModel vm)
         {
+            var post = new Post
+            {
+                Id = vm.Id,
+                Title = vm.Title,
+                Body = vm.Body,
+                Image = await _fileManager.SaveImage(vm.Image) //Handle Image
+            };
+
             if (post.Id > 0)
                 _repo.UpdatePost(post);
             else
